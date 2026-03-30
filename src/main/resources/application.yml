@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: core-service
+  data: 
+    mongodb:
+      host: 127.0.0.1
+      port: 27017
+      database: medisync_core
+      username: rootadmin
+      password: rootpassword
+      authentication-database: admin
+
+server:
+  port: 8082
+
+application:
+  security:
+    jwt:
+      secret-key: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
