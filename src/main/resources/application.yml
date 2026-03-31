@@ -1,14 +1,25 @@
 spring:
   application:
     name: core-service
-  data: 
-    mongodb:
+  datasource:
+    url: jdbc:postgresql://127.0.0.1:5432/medisync_core
+    username: postgres
+    password: rootpassword
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update # Auto-generates your SQL tables based on your Java entities
+    show-sql: true # Great for debugging relational queries
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  data:
+    redis:
       host: 127.0.0.1
-      port: 27017
-      database: medisync_core
-      username: rootadmin
-      password: rootpassword
-      authentication-database: admin
+      port: 6379
+  cache:
+    type: redis
 
 server:
   port: 8082
