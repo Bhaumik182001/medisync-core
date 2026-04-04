@@ -32,35 +32,33 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String jwt;
         final String userEmail;
 
-        // 1. Check if the token exists
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // 2. Extract the token and email
         jwt = authHeader.substring(7);
+
         try {
             userEmail = jwtService.extractUsername(jwt);
             
-            // 3. If email is present and user is not yet authenticated in this request cycle
             if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                
-                // 4. Validate the signature mathematically
                 if (jwtService.isTokenValid(jwt)) {
-                    // 5. Trust the token and set the security context WITHOUT hitting the database
+                    // Optional: Keep one clean log so you know it's working
+                    System.out.println(">>> [CORE SECURITY] Authenticated request for: " + userEmail);
+                    
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                             userEmail,
                             null,
-                            Collections.emptyList() // Roles would go here if we added them to the token claims
+                            Collections.emptyList() 
                     );
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
             }
-        } catch (Exception e) {
-            // If the token is tampered with or expired, jjwt throws an exception. We just catch it and deny access.
-            logger.error("JWT Validation failed: " + e.getMessage());
+        } catch (Throwable e) { 
+            // THE LIFESAVER: Catches both Exceptions (expired tokens) and Errors (missing dependencies)
+            System.err.println(">>> [SECURITY FILTER CRASH] " + e.getClass().getSimpleName() + ": " + e.getMessage());
         }
 
         filterChain.doFilter(request, response);

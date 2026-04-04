@@ -24,6 +24,7 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             // Lock down EVERYTHING in the Core Service. No public endpoints here.
             .authorizeHttpRequests(auth -> auth
+            		.requestMatchers("/erro").permitAll()
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session

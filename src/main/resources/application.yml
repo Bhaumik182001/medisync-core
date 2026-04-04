@@ -21,6 +21,13 @@ spring:
   cache:
     type: redis
 
+# Expose the Chaos Monkey control endpoints
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+    
 server:
   port: 8082
 

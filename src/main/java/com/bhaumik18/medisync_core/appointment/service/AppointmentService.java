@@ -47,4 +47,22 @@ public class AppointmentService {
 
         return appointmentRepository.save(appointment);
     }
+    
+    @Transactional
+    @CacheEvict(value = "availableSlots", key = "#result.timeSlot.schedule.provider.id")
+    public Appointment cancelAppointment(Long timeSlotId) {
+    	Appointment appointment = appointmentRepository.findByTimeSlotId(timeSlotId)
+    			.orElseThrow(() -> new RuntimeException("No appointment found for this slot."));
+    	
+    	TimeSlot slot = appointment.getTimeSlot();
+    	
+    	slot.setBooked(false);
+    	timeSlotRepository.save(slot);
+    	
+    	appointmentRepository.delete(appointment);
+
+        System.out.println(">>> COMPENSATING ACTION: Appointment deleted and TimeSlot " + timeSlotId + " is freed. <<<");
+
+        return appointment;
+    }
 }
