@@ -1,8 +1,9 @@
 package com.bhaumik18.medisync_core.provider.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
@@ -23,4 +24,10 @@ public interface TimeSlotRepository extends JpaRepository<TimeSlot, Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT t FROM TimeSlot t WHERE t.id = :id")
     Optional<TimeSlot> findByIdWithPessimisticWriteLock(@Param("id") Long id);
+    
+    @Modifying
+    @Query("UPDATE TimeSlot t SET t.isBooked = false")
+    void releaseAllSlots();
+    
+    List<TimeSlot> findByPatientEmailAndIsBookedTrue(String patientEmail);
 }

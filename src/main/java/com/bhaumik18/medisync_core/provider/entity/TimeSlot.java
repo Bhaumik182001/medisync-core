@@ -35,4 +35,7 @@ public class TimeSlot implements Serializable {
 
     @Column(nullable = false)
     private boolean isBooked = false;
+
+    @Column(name = "patient_email")
+    private String patientEmail; // Null when open, filled when booked
 }

@@ -36,4 +36,9 @@ public class AppointmentController {
 		return ResponseEntity.ok("Successfully cancelled appointment and freed the time slot.");
 	}
 	
+	@DeleteMapping("/reset-dev-data")
+    public ResponseEntity<String> resetData() {
+        return ResponseEntity.ok(appointmentService.resetDatabaseForTesting());
+    }
+	
 }

@@ -8,6 +8,7 @@ import com.bhaumik18.medisync_core.provider.dto.ProviderRequest;
 import com.bhaumik18.medisync_core.provider.entity.Provider;
 import com.bhaumik18.medisync_core.provider.repository.ProviderRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -34,4 +35,13 @@ public class ProviderService {
         // 4. Save to PostgreSQL
         return providerRepository.save(provider);
     }
+    
+    public Optional<Provider> findByIdentityEmail(String email) {
+        return providerRepository.findByIdentityEmail(email);
+    }
+    
+    public List<Provider> getAllProviders() {
+        return providerRepository.findAll();
+    }
+       
 }

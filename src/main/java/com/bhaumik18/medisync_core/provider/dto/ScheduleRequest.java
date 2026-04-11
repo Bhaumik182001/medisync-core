@@ -17,4 +17,7 @@ public class ScheduleRequest {
 
     @NotNull(message = "End time is required")
     private LocalTime endTime;
+    
+ // NEW: Allow the frontend to request specific durations
+    private Integer intervalMinutes;
 }

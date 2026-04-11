@@ -2,6 +2,7 @@ package com.bhaumik18.medisync_core.chaos;
 
 import jakarta.servlet.*;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -15,6 +16,11 @@ import java.io.IOException;
 public class NativeChaosMonkey implements Filter {
 
     private boolean isChaosActive = false;
+    
+    @GetMapping("/status")
+    public boolean getStatus() {
+        return this.isChaosActive;
+    }
 
     // 1. The Control Panel: Hit this endpoint to wake or sleep the monkey
     @PostMapping("/toggle")

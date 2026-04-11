@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -49,20 +50,38 @@ public class AppointmentService {
     }
     
     @Transactional
-    @CacheEvict(value = "availableSlots", key = "#result.timeSlot.schedule.provider.id")
+    // THE FIX 1: We use allEntries=true because if we return null below, the old SpEL key (#result...) would crash!
+    @CacheEvict(value = "availableSlots", allEntries = true) 
     public Appointment cancelAppointment(Long timeSlotId) {
-    	Appointment appointment = appointmentRepository.findByTimeSlotId(timeSlotId)
-    			.orElseThrow(() -> new RuntimeException("No appointment found for this slot."));
-    	
-    	TimeSlot slot = appointment.getTimeSlot();
-    	
-    	slot.setBooked(false);
-    	timeSlotRepository.save(slot);
-    	
-    	appointmentRepository.delete(appointment);
-
-        System.out.println(">>> COMPENSATING ACTION: Appointment deleted and TimeSlot " + timeSlotId + " is freed. <<<");
-
-        return appointment;
+        
+        // 1. ALWAYS unlock the TimeSlot first. The Orchestrator definitely locked this in Step 1.
+        TimeSlot slot = timeSlotRepository.findById(timeSlotId)
+                .orElseThrow(() -> new RuntimeException("TimeSlot not found during rollback!"));
+        
+        slot.setBooked(false);
+        slot.setPatientEmail(null); // Clear the owner so it's fully available again
+        timeSlotRepository.save(slot);
+        
+        // 2. Safely check if the Appointment was ever actually created in Step 2
+        Optional<Appointment> appointmentOpt = appointmentRepository.findByTimeSlotId(timeSlotId);
+        
+        if (appointmentOpt.isPresent()) {
+            Appointment appointment = appointmentOpt.get();
+            appointmentRepository.delete(appointment);
+            System.out.println(">>> COMPENSATING ACTION: Appointment deleted and TimeSlot " + timeSlotId + " is freed. <<<");
+            return appointment;
+        } else {
+            System.out.println(">>> COMPENSATING ACTION: TimeSlot " + timeSlotId + " freed. (Appointment never existed, skipping delete). <<<");
+            return null; // Safe to return null during a rollback
+        }
+    }
+    
+    @org.springframework.transaction.annotation.Transactional
+    public String resetDatabaseForTesting() {
+        // Delete all bookings
+        appointmentRepository.deleteAll();
+        // Free up the schedule
+        timeSlotRepository.releaseAllSlots();
+        return "DEV MODE: All appointments wiped. Schedule is completely open.";
     }
 }

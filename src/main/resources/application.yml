@@ -1,3 +1,6 @@
+server:
+  port: 8082
+
 spring:
   application:
     name: core-service
@@ -8,8 +11,8 @@ spring:
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: update # Auto-generates your SQL tables based on your Java entities
-    show-sql: true # Great for debugging relational queries
+      ddl-auto: create-drop 
+    show-sql: true 
     properties:
       hibernate:
         format_sql: true
@@ -21,17 +24,13 @@ spring:
   cache:
     type: redis
 
-# Expose the Chaos Monkey control endpoints
+application:
+  security:
+    jwt:
+      secret-key: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+
 management:
   endpoints:
     web:
       exposure:
         include: health,info,metrics
-    
-server:
-  port: 8082
-
-application:
-  security:
-    jwt:
-      secret-key: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
