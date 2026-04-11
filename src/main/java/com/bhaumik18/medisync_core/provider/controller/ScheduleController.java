@@ -65,8 +65,6 @@ public class ScheduleController {
         return ResponseEntity.ok().build();
     }
     
- // Don't forget this import if you don't have it!
-    // import java.security.Principal;
 
     @GetMapping("/appointments/me")
     public ResponseEntity<List<PatientAppointmentDTO>> getMyAppointments(Principal principal) {

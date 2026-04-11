@@ -26,7 +26,7 @@ USER spring:spring
 # Copy only the built JAR from Stage 1
 COPY --from=builder /build/target/*.jar app.jar
 
-# Expose the service port (Change to 8083 for Orchestrator, 8081 for Identity)
+
 EXPOSE 8082
 
 # Run the application

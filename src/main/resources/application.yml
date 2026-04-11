@@ -3,9 +3,9 @@ server:
 
 spring:
   application:
-    name: core-service
+    name: medisync-core 
   datasource:
-    url: jdbc:postgresql://127.0.0.1:5432/medisync_core
+    url: jdbc:postgresql://postgres-core:5432/medisync_core
     username: postgres
     password: rootpassword
     driver-class-name: org.postgresql.Driver
@@ -19,7 +19,7 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
   data:
     redis:
-      host: 127.0.0.1
+      host: redis-core 
       port: 6379
   cache:
     type: redis
