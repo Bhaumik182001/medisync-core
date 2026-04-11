@@ -37,7 +37,6 @@ public class ProviderController {
         String email = principal.getName(); 
 
         // 2. Query your database for this specific doctor's profile
-        // Note: Update "providerService.findByEmail" to whatever your actual service/repo method is named!
         Optional<Provider> providerProfile = providerService.findByIdentityEmail(email);
 
         // 3. If found, return 200 OK with the data. If not, return 404 Not Found.
