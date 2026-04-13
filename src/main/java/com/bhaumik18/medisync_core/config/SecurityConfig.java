@@ -7,7 +7,6 @@ import java.util.Arrays;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -28,31 +27,46 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .cors(Customizer.withDefaults()) // This automatically looks for the bean below!
+            // 1. Explicitly wire the CORS configuration to intercept OPTIONS requests early
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            
+            // 2. Disable CSRF (safe since we use stateless JWTs)
             .csrf(AbstractHttpConfigurer::disable)
-            // Lock down EVERYTHING in the Core Service.
+            
+            // 3. Allow GKE Health Check, lock down everything else
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/error").permitAll()
+                .requestMatchers("/api/v1/providers/**", "/api/v1/schedules/**", "/api/chaos/**", "/api/v1/core/health", "/api/v1/core/health").permitAll()
                 .anyRequest().authenticated()
             )
+            
+            // 4. Enforce stateless sessions
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
+            
+            // 5. Add JWT authentication filter
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    // THE FIX: Define the CORS config right here in the Security layer
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173", 
-                "https://medisync-frontend-vert.vercel.app")); 
-        // Explicitly allowing OPTIONS and DELETE
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
+      
+        configuration.setAllowedOrigins(Arrays.asList(
+                "http://localhost:5173", 
+                "https://medisync-frontend-vert.vercel.app"
+        ));
+        
+        // Explicitly allowing OPTIONS for preflight, plus standard REST methods
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+        
+        // Allow necessary headers (Authorization is crucial for JWT)
+        configuration.setAllowedHeaders(Arrays.asList("*"));
+        
+        // Allow credentials for secure cross-origin requests
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
